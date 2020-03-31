@@ -1,0 +1,138 @@
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+{% block custom_css %}
+<style>
+.bg_blue{
+padding:10px;
+border-radius:10px;
+box-shadow:3px 3px 3px grey;
+background:dodgerblue;
+color:#fff;
+}
+.custom-block{
+padding:15px;
+border:1px solid dodgerblue;
+}
+</style>
+{% endblock custom_css %}
+
+{% block bodydata %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+                <div class="form-group bg_blue">
+                  Welcome {{ user.username}} <form class="" action="/logoutuser/" method="POST">
+                    {% csrf_token %}
+              <a href="/logoutuser/" class="btn btn-info btn-lg">
+          <span class="glyphicon glyphicon-log-out"></span> Log out    </form>
+        </a>                              Task Tracker
+                </div>
+                <div class="table">
+                <table class="table">
+                    <tr>
+                 <!-- <th>ID</th>   -->
+                        <th>Automation</th>
+                        <th>Task</th>
+                        <th>Start-date</th>
+                        <th>End-date</th>
+                        <th>Status</th>
+                        <th>Blockers</th>
+                        <th>SPOC</th>
+                        <th>Finished</th>
+
+                    </tr>
+                    {% for tracker in trackerdata %}
+
+                        <tr>
+                         <!--      <td >{{ student.id }}</td>  -->
+
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="automation">{{ tracker.automation }}</td>
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="task">{{ tracker.task }}</td>
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="stardate">{{ tracker.stardate }}</td>
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="enddate">{{ tracker.enddate }}</td>
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="status">{{ tracker.status }}</td>
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="blockers">{{ tracker.blockers }}</td>
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="spoc">{{ tracker.spoc }}</td>
+                            <td class="editable" data-id="{{ tracker.id }}" data-type="finished">{{ tracker.finished }}</td>
+                            <td><a class="btn btn-success" href="/update_tracker/{{tracker.id}}">Update</a></td>
+                        </tr>
+                     {% endfor %}
+                </table>
+                </div>
+        </div>
+
+    </div>
+    <!--
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="form-group">
+                 {% if messages %}
+                        {% for message in messages %}
+                            {% if message.tags == 'success' %}
+                                <div class="alert alert-success">{{ message }}</div>
+                            {% elif message.tags == 'error' %}
+                                <div class="alert alert-danger">{{ message }}</div>
+                            {% endif %}
+                        {% endfor %}
+                 {% endif %}
+            </div>
+        </div>
+</div>
+-->
+{% endblock bodydata %}
+
+{% block custom_js %}
+    <script>
+        $(document).ready(function(){
+            $(document).on("dblclick",".editable",function(){
+                var value=$(this).text();
+                var input="<input type='text' class='input-data' value='"+value+"' class='form-control'>";
+                $(this).html(input);
+                $(this).removeClass("editable")
+            });
+
+            $(document).on("blur",".input-data",function(){
+                var value=$(this).val();
+                var td=$(this).parent("td");
+                $(this).remove();
+                td.html(value);
+                td.addClass("editable");
+                var type=td.data("type");
+                sendToServer(td.data("id"),value,type);
+            });
+            $(document).on("keypress",".input-data",function(e){
+                var key=e.which;
+                if(key==13){
+                    var value=$(this).val();
+                    var td=$(this).parent("td");
+                    $(this).remove();
+                    td.html(value);
+                    td.addClass("editable");
+                   var type=td.data("type");
+                   sendToServer(td.data("id"),value,type);
+                }
+            });
+
+            function sendToServer(id,value,type){
+                console.log(id);
+                console.log(value);
+                console.log(type);
+                $.ajax({
+                    url:"http://127.0.0.1:8000/savetracker",
+                    type:"POST",
+                    data:{id:id,type:type,value:value},
+                })
+                .done(function(response){
+                    console.log(response);
+                })
+                .fail(function(){
+                   console.log("Error Occured");
+                });
+
+            }
+        });
+    </script>
+{% endblock custom_js %}
